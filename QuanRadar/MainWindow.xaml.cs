@@ -130,7 +130,14 @@ namespace QuanRadar
                     else
                     {
                         Jobject = GetQuanData(_UserID, i, userType, lasttime);
-                        lasttime = Jobject["data"]["lLastTime"].ToString();
+                        if (Jobject.ToString().Length >150)
+                        {
+                            lasttime = Jobject["data"]["lLastTime"].ToString();
+                        }
+                        else
+                        {
+                            isEnd = true;
+                        }
                     }
                     //判断是否为最后一次
                     if (Jobject["data"]["lLastTime"].ToString() == "0")
@@ -154,6 +161,7 @@ namespace QuanRadar
         //提交一次请求获取十条数据回来，如果有的话
         private JObject GetQuanData(string UserID, int Page, String accountType, string lasttime = "0")
         {
+            string temp = "{\"retCode\": 0,\"data\": {\"AllowView\": true,\"vHomePageFeed\": [],\"lLastTime\": 0,\"isEnd\": false}}";
             //RquestHeader,一般不用修改，如果要修改直接在Chrome浏览器F12复制到这里就可以。
             string heads = @"Accept: application/json, text/javascript
                              Accept-Encoding: gzip, deflate, br
@@ -178,8 +186,16 @@ namespace QuanRadar
             //sw.Write(response);
             //sw.Flush();
             //sw.Close();
-            //第一页会返回html而不是json，所以加个判断。
-            return JObject.Parse(response);
+            //网不好的时候会获得错误的json，导致parse失败
+            if (response.Length > 150)
+            {
+                return JObject.Parse(response);
+            }
+            else
+            {
+                return JObject.Parse(temp);
+            }
+            
         }
         //分析数据
         private void analysePage(JObject jq, PageFeed pg)
