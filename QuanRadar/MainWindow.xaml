@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuanRadar"
         mc:Ignorable="d"
-        Title="圈子爬取器         V0.1.181010.0129" Height="450" Width="800" ResizeMode="NoResize">
+        Title="圈子爬取器         V0.1.181010.2058" Height="450" Width="800" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="56*"/>
@@ -18,6 +18,7 @@
         <Label x:Name="Type" Grid.ColumnSpan="2" Content="用户ID：" HorizontalAlignment="Left" Height="29" Margin="10,10,0,0" VerticalAlignment="Top" Width="51"/>
         <Label x:Name="ProgressStatus" Content="" Grid.Column="2" HorizontalAlignment="Left" Height="31" Margin="108,44,0,0" VerticalAlignment="Top" Width="77"/>
         <Button x:Name="FileOpenButton" Content="打开配置文件" HorizontalAlignment="Left" Height="29" Margin="108,46,0,0" VerticalAlignment="Top" Width="79" Click="FileOpenButton_Click" Grid.Column="2" />
+        <Button x:Name="FileToOne" Content="合并现有数据" HorizontalAlignment="Left" Height="29" Margin="108,80,0,0" VerticalAlignment="Top" Width="79" Click="FileToOne_Click" Grid.Column="2" />
 
     </Grid>
 </Window>

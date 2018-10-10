@@ -40,6 +40,11 @@ namespace QuanRadar
         public MainWindow()
         {
             InitializeComponent();
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "data/"))
+            {
+                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "data/");
+            }
+
         }
         //使用子线程获取所有数据，避免卡UI
         public delegate void GetAllDataHandler(string _UserID, string _userType);
@@ -93,10 +98,7 @@ namespace QuanRadar
 
                 MessageBox.Show(e.ToString());
             }
-
-
         }
-
         //获取所有数据
         private void GetAllData(string _UserID, string userType)
         {
@@ -145,7 +147,7 @@ namespace QuanRadar
                 {
                     isEnd = true;
                 }
-                
+
             }
             pgFeed.Save2Excel(nickName);
         }
@@ -265,14 +267,12 @@ namespace QuanRadar
             }
 
 
-            StartButton.IsEnabled = false;
-            UserID.IsEnabled = false;
-            FileOpenButton.IsEnabled = false;
+            UnEnabledButton();
             StartButton.Content = "爬取中……";
         }
 
 
-        //
+        //打开配置文件
         private void FileOpenButton_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog()
@@ -286,23 +286,92 @@ namespace QuanRadar
                 UserID.Text = openFileDialog.FileName;
             }
         }
-
+        //合并所有data目录下的excel文件为一个，方便统计
+        private void FileToOne_Click(object sender, RoutedEventArgs e)
+        {
+            UnEnabledButton();
+            //保存所有数据
+            PageFeed pgFeed = new PageFeed();
+            string AppDomainPath = AppDomain.CurrentDomain.BaseDirectory;
+            string DataPath = AppDomainPath + "data\\";
+            DirectoryInfo root = new DirectoryInfo(DataPath);
+            //遍历目录下所有文件
+            foreach (FileInfo f in root.GetFiles())
+            {
+                if (f.Name.Split('_')[0] == "merge")
+                {
+                    f.Delete();
+                }
+                else
+                {
+                    try
+                    {
+                        IWorkbook workbook = null;  //新建IWorkbook对象  
+                        FileStream fileStream = new FileStream(f.FullName, FileMode.Open, FileAccess.Read);
+                        if (f.FullName.IndexOf(".xlsx") > 0) // 2007版本  
+                        {
+                            workbook = new XSSFWorkbook(fileStream);  //xlsx数据读入workbook  
+                        }
+                        else if (f.FullName.IndexOf(".xls") > 0) // 2003版本  
+                        {
+                            workbook = new HSSFWorkbook(fileStream);  //xls数据读入workbook  
+                        }
+                        ISheet sheet = workbook.GetSheetAt(0);  //获取第一个工作表  
+                        IRow row;// = sheet.GetRow(0);            //新建当前工作表行数据  
+                        for (int i = 1; i <= sheet.LastRowNum; i++)  //对工作表每一行  
+                        {
+                            row = sheet.GetRow(i);   //row读入第i行数据  
+                            if (row != null)
+                            {
+                                //读取pageID
+                                string temp = row.GetCell(0).ToString();
+                                pgFeed.allPages.Add(temp, new OnePage(temp));
+                                pgFeed.pageIDList.Add(temp);
+                                for (int j = 1; j < 11; j++)
+                                {
+                                    pgFeed.allPages[temp].SetCell(j, row.GetCell(j).ToString());
+                                }
+                            }
+                        }
+                        fileStream.Close();
+                        workbook.Close();
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show(x.ToString());
+                    }
+                }
+            }
+            pgFeed.Save2Excel("merge_" + DateTime.Now.ToString("yyyyMMddHHmmssffff"));
+            MessageBox.Show("合并完成");
+            EnabledButton();
+        }
+        public void UnEnabledButton()
+        {
+            StartButton.IsEnabled = false;
+            UserID.IsEnabled = false;
+            FileOpenButton.IsEnabled = false;
+            FileToOne.IsEnabled = false;
+        }
+        public void EnabledButton()
+        {
+            StartButton.IsEnabled = true;
+            UserID.IsEnabled = true;
+            FileOpenButton.IsEnabled = true;
+            FileToOne.IsEnabled = true;
+        }
         private void SingleIDCallback(IAsyncResult ar)
         {
             MessageBox.Show("爬取结束,文件处于运行程序目录下的data文件夹中");
-            StartButton.Dispatcher.Invoke(new Action(delegate { StartButton.IsEnabled = true; }));
-            StartButton.Dispatcher.Invoke(new Action(delegate { UserID.IsEnabled = true; }));
-            StartButton.Dispatcher.Invoke(new Action(delegate { FileOpenButton.IsEnabled = true; }));
             StartButton.Dispatcher.Invoke(new Action(delegate { StartButton.Content = "开始爬取"; }));
+            StartButton.Dispatcher.Invoke(new Action(delegate { EnabledButton(); }));
         }
         //多用户爬取回调
         private void FileCallback(IAsyncResult ar)
         {
             MessageBox.Show("爬取结束,文件处于运行程序目录下的data文件夹中");
-            StartButton.Dispatcher.Invoke(new Action(delegate { StartButton.IsEnabled = true; }));
-            StartButton.Dispatcher.Invoke(new Action(delegate { UserID.IsEnabled = true; }));
-            StartButton.Dispatcher.Invoke(new Action(delegate { FileOpenButton.IsEnabled = true; }));
             StartButton.Dispatcher.Invoke(new Action(delegate { StartButton.Content = "开始爬取"; }));
+            StartButton.Dispatcher.Invoke(new Action(delegate { EnabledButton(); }));
         }
     }
 }

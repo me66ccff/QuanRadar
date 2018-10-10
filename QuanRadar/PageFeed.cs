@@ -50,6 +50,56 @@ namespace QuanRadar
         {
             PageID = _PageID;
         }
+        public void SetCell(int i,string j)
+        {
+            switch (i)
+            {
+                case 0:
+                    //返回文章ID
+                    PageID = j;
+                    break;
+                case 1:
+                    //返回用户ID
+                    nickName = j;
+                    break;
+                case 2:
+                    //文章名称
+                    PageName = j;
+                    break;
+                case 3:
+                    //发布时间
+                    Date = j;
+                    break;
+                case 4:
+                    //获得的赞
+                    praiseNum = j;
+                    break;
+                case 5:
+                    //获得的评论
+                    commentNum = j;
+                    break;
+                case 6:
+                    //阅读量
+                    viewNum = j;
+                    break;
+                case 7:
+                    //发布圈子ID
+                    quanID = j;
+                    break;
+                case 8:
+                    //发布圈子名称
+                    quanName = j;
+                    break;
+                case 9:
+                    //发布圈子地址
+                    quanUrl = j;
+                    break;
+                case 10:
+                    //发布文章地址
+                    pageUrl = j;
+                    break;
+            }
+        }
         public string GetCell(int i)
         {
             switch (i)
@@ -97,6 +147,7 @@ namespace QuanRadar
         public PageFeed()
         {
             allPages.Clear();
+            pageIDList.Clear();
         }
         //保存所有文章数据
         public Dictionary<string,OnePage> allPages = new Dictionary<string,OnePage>();
@@ -114,7 +165,7 @@ namespace QuanRadar
                     IRow row = sheet.CreateRow(i); //i表示了创建行的索引，从0开始
                     if (i == 0)
                     {
-                        for (int j = 0; j < 9; j++)
+                        for (int j = 0; j < 11; j++)
                         {
                             ICell cell = row.CreateCell(j, CellType.String);  //同时这个函数还有第二个重载，可以指定单元格存放数据的类型
                             cell.SetCellValue(GetCell(j));
@@ -124,7 +175,7 @@ namespace QuanRadar
                     {
                         string pageID = pageIDList[i - 1];
                         //创建单元格
-                        for (int j = 0; j < 10; j++)
+                        for (int j = 0; j < 11; j++)
                         {
                             ICell cell = row.CreateCell(j, CellType.String);  //同时这个函数还有第二个重载，可以指定单元格存放数据的类型
                             cell.SetCellValue(allPages[pageID].GetCell(j));
