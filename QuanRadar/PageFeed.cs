@@ -190,7 +190,8 @@ namespace QuanRadar
                     {
                         Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "data/");
                     }
-                    using (FileStream fs = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data/" + userName + ".xlsx"))
+                    
+                    using (FileStream fs = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data/" + MakeValidFileName(ref userName) + ".xlsx"))
                     {
                         workbook.Write(fs);
                         //最后记得关闭对象
@@ -204,6 +205,25 @@ namespace QuanRadar
             }
             
             
+        }
+        //去掉不能为文件名的字符，避免报错
+        public static string MakeValidFileName(ref string text, string replacement = "_")
+        {
+            StringBuilder str = new StringBuilder();
+            var invalidFileNameChars = System.IO.Path.GetInvalidFileNameChars();
+            foreach (var c in text)
+            {
+                if (invalidFileNameChars.Contains(c))
+                {
+                    str.Append(replacement ?? "");
+                }
+                else
+                {
+                    str.Append(c);
+                }
+            }
+
+            return str.ToString();
         }
         //顶栏
         public string GetCell(int i)
