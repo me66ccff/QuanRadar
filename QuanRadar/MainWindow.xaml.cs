@@ -34,9 +34,10 @@ namespace QuanRadar
     {
 
         /* https://quan.qq.com/node/api2/getHomePageFeed/ */
-        //临时保存爬取到的数据
-        //private dic
-
+        //是否只爬取最近七天
+        public bool isSeven = false;
+        public bool isCustom = false;
+        public bool End = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -46,11 +47,76 @@ namespace QuanRadar
             }
 
         }
+        //判断天数
+        private bool CheckDate(string pageDate)
+        {
+            //当天发布
+            if (pageDate.Substring(pageDate.Length-1,1) == "前")
+            {
+                return true;
+            }
+            int PageMonth = 0;
+            int PageDay = 0;
+            DateTime PageDT;
+            //月份是否为两位,
+            if (pageDate.Substring(2,1) == "月")
+            {
+                PageMonth = int.Parse(pageDate.Substring(0, 2));
+                //判断日期位数(单数)
+                if (pageDate.Length  == 5)
+                {
+                    PageDay = int.Parse(pageDate.Substring(3,1));
+                }
+                else
+                {
+                    PageDay = int.Parse(pageDate.Substring(3, 2));
+                }
+            }
+            else
+            {
+                PageMonth = int.Parse(pageDate.Substring(0, 1));
+                //判断日期位数(单数)
+                if (pageDate.Length == 4)
+                {
+                    PageDay = int.Parse(pageDate.Substring(2, 1));
+                }
+                else
+                {
+                    PageDay = int.Parse(pageDate.Substring(2, 2));
+                }
+            }
+            //判断当前是否为一月六号(1111/1/1)
+            if (DateTime.Now.ToShortDateString().Substring(5, 1) == "1" && DateTime.Now.ToShortDateString().Substring(7, 1) == "6")
+            {
+                //大于二说明是去年的数据
+                if (PageMonth > 2)
+                {
+                    PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4))-1, PageMonth, PageDay);
+                }
+                else
+                {
+                    PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
+                }
+            }
+            else
+            {
+                PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
+            }
+            //判断是否为7天内数据
+            if ((DateTime.Now - PageDT).TotalDays <= 6)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         //使用子线程获取所有数据，避免卡UI
-        public delegate void GetAllDataHandler(string _UserID, string _userType);
-        public delegate void GetAlldataByExcelFileHandler(string path);
+        public delegate void GetAllDataHandler(string _UserID, string _userType,bool isSevenDay);
+        public delegate void GetAlldataByExcelFileHandler(string path, bool seven);
         //爬取所有用户的数据
-        private void GetAlldataByExcelFile(string path)
+        private void GetAlldataByExcelFile(string path,bool seven)
         {
             try
             {
@@ -80,12 +146,12 @@ namespace QuanRadar
                             if (cellValue.Substring(0, 3) == "101")
                             {
                                 _temp = cellValue.Substring(4, cellValue.Length - 4);
-                                GetAllData(_temp, "101");
+                                GetAllData(_temp, "101", seven);
                             }
                             else
                             {
                                 _temp = cellValue.Substring(2, cellValue.Length - 2);
-                                GetAllData(_temp, "2");
+                                GetAllData(_temp, "2", seven);
                             }
                         }
                     }
@@ -100,9 +166,10 @@ namespace QuanRadar
             }
         }
         //获取所有数据
-        private void GetAllData(string _UserID, string userType)
+        private void GetAllData(string _UserID, string userType,bool isSevenDay)
         {
             JObject Jobject = null;
+            End = false;
             bool isEnd = false;
             string lasttime = null;
             string nickName = "";
@@ -139,7 +206,7 @@ namespace QuanRadar
                             isEnd = true;
                         }
                     }
-                    //判断是否为最后一次
+                    //判断是否为此用户所有数据的最后一次
                     if (Jobject["data"]["lLastTime"].ToString() == "0")
                     {
                         isEnd = true;
@@ -147,7 +214,11 @@ namespace QuanRadar
                     else
                     {
                         //有效数据，进行分析
-                        analysePage(Jobject, pgFeed);
+                        analysePage(Jobject, pgFeed, isSevenDay);
+                        if (End)
+                        {
+                            isEnd = true;
+                        }
                     }
                 }
                 else
@@ -198,30 +269,62 @@ namespace QuanRadar
             
         }
         //分析数据
-        private void analysePage(JObject jq, PageFeed pg)
+        private void analysePage(JObject jq, PageFeed pg, bool isSevenDay)
         {
             foreach (var jb in jq["data"]["vHomePageFeed"])
             {
                 //判断是否为文章
                 if (jb["eFeedType"].ToString() == "1")
                 {
-                    //文章ID作为唯一值
-                    string postID = jb["stPostSummary"]["postId"].ToString();
-                    //添加一行数据
-                    pg.allPages.Add(postID, new OnePage(postID));
-                    pg.pageIDList.Add(postID);
-                    //pg.allPages[postID]
-                    pg.allPages[postID].nickName = jb["stPostSummary"]["postUser"]["nickname"].ToString();
-                    pg.allPages[postID].PageID = jb["stPostSummary"]["postId"].ToString();
-                    pg.allPages[postID].PageName = jb["stPostSummary"]["postField"]["title"].ToString();
-                    pg.allPages[postID].Date = jb["stPostSummary"]["elapseTime"].ToString();
-                    pg.allPages[postID].praiseNum = jb["stPostSummary"]["praiseNum"].ToString();
-                    pg.allPages[postID].commentNum = jb["stPostSummary"]["commentNum"].ToString();
-                    pg.allPages[postID].viewNum = jb["stPostSummary"]["viewNum"].ToString();
-                    pg.allPages[postID].quanName = jb["stPostSummary"]["simpleInfo"]["circleName"].ToString();
-                    pg.allPages[postID].quanID = jb["stPostSummary"]["simpleInfo"]["circleId"].ToString();
-                    pg.allPages[postID].quanUrl = "https://quan.qq.com/circle/" + pg.allPages[postID].quanID;
-                    pg.allPages[postID].pageUrl = "https://quan.qq.com/post/" + pg.allPages[postID].quanID + "/" + postID;
+                    //看是否需要判断七天内
+                    if (isSevenDay)
+                    {
+                        if (CheckDate(jb["stPostSummary"]["elapseTime"].ToString()))
+                        {
+                            //文章ID作为唯一值
+                            string postID = jb["stPostSummary"]["postId"].ToString();
+                            //添加一行数据
+                            pg.allPages.Add(postID, new OnePage(postID));
+                            pg.pageIDList.Add(postID);
+                            //pg.allPages[postID]
+                            pg.allPages[postID].nickName = jb["stPostSummary"]["postUser"]["nickname"].ToString();
+                            pg.allPages[postID].PageID = jb["stPostSummary"]["postId"].ToString();
+                            pg.allPages[postID].PageName = jb["stPostSummary"]["postField"]["title"].ToString();
+                            pg.allPages[postID].Date = jb["stPostSummary"]["elapseTime"].ToString();
+                            pg.allPages[postID].praiseNum = jb["stPostSummary"]["praiseNum"].ToString();
+                            pg.allPages[postID].commentNum = jb["stPostSummary"]["commentNum"].ToString();
+                            pg.allPages[postID].viewNum = jb["stPostSummary"]["viewNum"].ToString();
+                            pg.allPages[postID].quanName = jb["stPostSummary"]["simpleInfo"]["circleName"].ToString();
+                            pg.allPages[postID].quanID = jb["stPostSummary"]["simpleInfo"]["circleId"].ToString();
+                            pg.allPages[postID].quanUrl = "https://quan.qq.com/circle/" + pg.allPages[postID].quanID;
+                            pg.allPages[postID].pageUrl = "https://quan.qq.com/post/" + pg.allPages[postID].quanID + "/" + postID;
+                        }
+                        else
+                        {
+                            End = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        //文章ID作为唯一值
+                        string postID = jb["stPostSummary"]["postId"].ToString();
+                        //添加一行数据
+                        pg.allPages.Add(postID, new OnePage(postID));
+                        pg.pageIDList.Add(postID);
+                        //pg.allPages[postID]
+                        pg.allPages[postID].nickName = jb["stPostSummary"]["postUser"]["nickname"].ToString();
+                        pg.allPages[postID].PageID = jb["stPostSummary"]["postId"].ToString();
+                        pg.allPages[postID].PageName = jb["stPostSummary"]["postField"]["title"].ToString();
+                        pg.allPages[postID].Date = jb["stPostSummary"]["elapseTime"].ToString();
+                        pg.allPages[postID].praiseNum = jb["stPostSummary"]["praiseNum"].ToString();
+                        pg.allPages[postID].commentNum = jb["stPostSummary"]["commentNum"].ToString();
+                        pg.allPages[postID].viewNum = jb["stPostSummary"]["viewNum"].ToString();
+                        pg.allPages[postID].quanName = jb["stPostSummary"]["simpleInfo"]["circleName"].ToString();
+                        pg.allPages[postID].quanID = jb["stPostSummary"]["simpleInfo"]["circleId"].ToString();
+                        pg.allPages[postID].quanUrl = "https://quan.qq.com/circle/" + pg.allPages[postID].quanID;
+                        pg.allPages[postID].pageUrl = "https://quan.qq.com/post/" + pg.allPages[postID].quanID + "/" + postID;
+                    }
                 }
             }
         }
@@ -257,11 +360,22 @@ namespace QuanRadar
                     MessageBox.Show(a.ToString());
                 }
             }
+            bool isSeven = false;
+            bool isCustom = false;
+            //
+            if (isSevenDay.IsChecked == true)
+            {
+                isSeven = true;
+            }
+            if (isCustomFormat.IsChecked == true)
+            {
+                isCustom = true;
+            }
             //xlsx or xls
             if (UserID.Text.Substring(UserID.Text.Length - 5, 5) == ".xlsx" | UserID.Text.Substring(UserID.Text.Length - 4, 4) == ".xls")
             {
                 GetAlldataByExcelFileHandler handler = new GetAlldataByExcelFileHandler(GetAlldataByExcelFile);
-                IAsyncResult result = handler.BeginInvoke(UserID.Text, new AsyncCallback(FileCallback), null);
+                IAsyncResult result = handler.BeginInvoke(UserID.Text,isSeven, new AsyncCallback(FileCallback), null);
             }
             //单个UserID
             else
@@ -269,20 +383,17 @@ namespace QuanRadar
                 GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
                 string _temp = "";
 
-
                 if (UserID.Text.Substring(0, 3) == "101")
                 {
                     _temp = UserID.Text.Substring(4, UserID.Text.Length - 4);
-                    IAsyncResult result = handler.BeginInvoke(_temp, "101", new AsyncCallback(SingleIDCallback), null);
+                    IAsyncResult result = handler.BeginInvoke(_temp, "101", isSeven, new AsyncCallback(SingleIDCallback), null);
                 }
                 else
                 {
                     _temp = UserID.Text.Substring(2, UserID.Text.Length - 2);
-                    IAsyncResult result = handler.BeginInvoke(_temp, "2", new AsyncCallback(SingleIDCallback), null);
+                    IAsyncResult result = handler.BeginInvoke(_temp, "2", isSeven, new AsyncCallback(SingleIDCallback), null);
                 }
             }
-
-
             UnEnabledButton();
             StartButton.Content = "爬取中……";
         }
@@ -340,10 +451,10 @@ namespace QuanRadar
                             if (row != null)
                             {
                                 //读取pageID
-                                string temp = row.GetCell(0).ToString();
+                                string temp = row.GetCell(2).ToString();
                                 pgFeed.allPages.Add(temp, new OnePage(temp));
                                 pgFeed.pageIDList.Add(temp);
-                                for (int j = 1; j < 11; j++)
+                                for (int j = 0; j < 11; j++)
                                 {
                                     pgFeed.allPages[temp].SetCell(j, row.GetCell(j).ToString());
                                 }

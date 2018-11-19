@@ -54,15 +54,15 @@ namespace QuanRadar
         {
             switch (i)
             {
-                case 0:
+                case 2:
                     //返回文章ID
                     PageID = j;
                     break;
-                case 1:
+                case 0:
                     //返回用户ID
                     nickName = j;
                     break;
-                case 2:
+                case 1:
                     //文章名称
                     PageName = j;
                     break;
@@ -104,13 +104,13 @@ namespace QuanRadar
         {
             switch (i)
             {
-                case 0:
+                case 2:
                     //返回文章ID
                     return PageID;
-                case 1:
+                case 0:
                     //返回用户ID
                     return nickName;
-                case 2:
+                case 1:
                     //文章名称
                     return PageName;          
                 case 3:
@@ -230,13 +230,13 @@ namespace QuanRadar
         {
             switch (i)
             {
-                case 0:
+                case 2:
                     //返回文章ID
                     return "文章ID";
-                case 1:
+                case 0:
                     //返回用户ID
                     return "用户ID";
-                case 2:
+                case 1:
                     //文章名称
                     return "文章名称";
                 case 3:

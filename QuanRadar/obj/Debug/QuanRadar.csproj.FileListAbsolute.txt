@@ -25,3 +25,4 @@ D:\Project\C#\QuanRadar\QuanRadar\obj\Debug\QuanRadar.csproj.CoreCompileInputs.c
 D:\Project\C#\QuanRadar\QuanRadar\obj\Debug\QuanRadar.csproj.CopyComplete
 D:\Project\C#\QuanRadar\QuanRadar\obj\Debug\QuanRadar.exe
 D:\Project\C#\QuanRadar\QuanRadar\obj\Debug\QuanRadar.pdb
+D:\Project\C#\QuanRadar\QuanRadar\obj\Debug\QuanRadar.csprojAssemblyReference.cache

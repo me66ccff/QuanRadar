@@ -19,6 +19,7 @@
         <Label x:Name="ProgressStatus" Content="" Grid.Column="2" HorizontalAlignment="Left" Height="31" Margin="108,44,0,0" VerticalAlignment="Top" Width="77"/>
         <Button x:Name="FileOpenButton" Content="打开配置文件" HorizontalAlignment="Left" Height="29" Margin="108,46,0,0" VerticalAlignment="Top" Width="79" Click="FileOpenButton_Click" Grid.Column="2" />
         <Button x:Name="FileToOne" Content="合并现有数据" HorizontalAlignment="Left" Height="29" Margin="108,80,0,0" VerticalAlignment="Top" Width="79" Click="FileToOne_Click" Grid.Column="2" />
-
+        <CheckBox x:Name="isCustomFormat" Content="定制格式" Grid.Column="2" HorizontalAlignment="Left" Height="17" Margin="108,121,0,0" VerticalAlignment="Top" Width="77"/>
+        <CheckBox x:Name="isSevenDay" Content="爬七天内" Grid.Column="2" HorizontalAlignment="Left" Height="17" Margin="108,152,0,0" VerticalAlignment="Top" Width="77"/>
     </Grid>
 </Window>
