@@ -8,6 +8,10 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using QuanRadar.Helper;
 using System.Windows;
+using NPOI.SS.Util;
+using NPOI.HSSF.UserModel;
+using Microsoft.Win32;
+
 namespace QuanRadar
 {
     //一条数据
@@ -265,6 +269,70 @@ namespace QuanRadar
                     return "发布文章地址";
             }
             return "";
+        }
+        //自定义格式
+        public void CustomFormat(string filename)
+        {
+            //读取文件的完整路径
+            string FilePath = AppDomain.CurrentDomain.BaseDirectory + "data\\" + filename+ ".xlsx";
+            try
+            {
+                IWorkbook workbook = new XSSFWorkbook();  //新建IWorkbook对象  
+                using (FileStream file = new FileStream(FilePath, FileMode.Open, FileAccess.ReadWrite))  //路径，打开权限，读取权限
+                {
+                    workbook = new XSSFWorkbook(file);  //xlsx数据读入workbook  
+                    file.Close();
+                }
+                ISheet sheet = workbook.GetSheetAt(0);  //获取第一个工作表  
+                IRow row;
+                for (int g = 0; g <= 1; g++)
+                {
+                    string nowID = "";
+                    int startPoint = 0;
+                    int endPoint = 0;
+                    for (int i = 1; i <= sheet.LastRowNum; i++)  //对工作表每一行  
+                    {
+                        row = sheet.GetRow(i);   //row读入第i行数据 
+                        if (row != null)
+                        {
+                            string temp = row.GetCell(g).ToString();
+                            if (temp != nowID)
+                            {
+                                if (nowID == "")
+                                {
+                                    nowID = temp;
+                                    startPoint = i;
+                                    endPoint = i;
+                                }
+                                else
+                                {
+                                    
+                                    sheet.AddMergedRegion(new CellRangeAddress(startPoint, endPoint, g, g));
+                                    nowID = temp;
+                                    endPoint = i;
+                                    startPoint = i;
+                                }
+                            }
+                            else if (i == sheet.LastRowNum)
+                            {
+                                endPoint = i;
+                                sheet.AddMergedRegion(new CellRangeAddress(startPoint, endPoint, g, g));
+                            }
+                            else
+                            {
+                                endPoint = i;
+                            }
+                        }
+                    }
+                }
+                FileStream files = new FileStream(FilePath, FileMode.Create);
+                workbook.Write(files);
+                files.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.ToString());
+            }
         }
     }
 }

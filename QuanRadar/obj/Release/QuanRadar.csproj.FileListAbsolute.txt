@@ -12,7 +12,6 @@ D:\Project\C#\QuanRadar\QuanRadar\bin\Release\NPOI.OpenXmlFormats.dll
 D:\Project\C#\QuanRadar\QuanRadar\bin\Release\Flurl.xml
 D:\Project\C#\QuanRadar\QuanRadar\bin\Release\Flurl.Http.xml
 D:\Project\C#\QuanRadar\QuanRadar\bin\Release\Newtonsoft.Json.xml
-D:\Project\C#\QuanRadar\QuanRadar\bin\Release\NPOI.xml
 D:\Project\C#\QuanRadar\QuanRadar\obj\Release\QuanRadar.csprojAssemblyReference.cache
 D:\Project\C#\QuanRadar\QuanRadar\obj\Release\MainWindow.g.cs
 D:\Project\C#\QuanRadar\QuanRadar\obj\Release\App.g.cs

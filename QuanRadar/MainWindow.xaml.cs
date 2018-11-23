@@ -36,8 +36,10 @@ namespace QuanRadar
         /* https://quan.qq.com/node/api2/getHomePageFeed/ */
         //是否只爬取最近七天
         public bool isSeven = false;
-        public bool isCustom = false;
         public bool End = false;
+        //爬取数据区间
+        public DateTime StartTime;
+        public DateTime EndTime;
         public MainWindow()
         {
             InitializeComponent();
@@ -50,27 +52,49 @@ namespace QuanRadar
         //判断天数
         private bool CheckDate(string pageDate)
         {
-            //当天发布
-            if (pageDate.Substring(pageDate.Length-1,1) == "前")
-            {
-                return true;
-            }
             int PageMonth = 0;
             int PageDay = 0;
             DateTime PageDT;
-            //月份是否为两位,
-            if (pageDate.Substring(2,1) == "月")
+            //当天发布
+            if (pageDate.Substring(pageDate.Length-1,1) == "前")
+            {
+                PageDT = DateTime.Now;
+            }
+            else if (pageDate == "昨天")
+            {
+                PageDT = DateTime.Now.AddDays(-1);
+            }
+            //月份是否为两位
+            else if (pageDate.Substring(2, 1) == "月")
             {
                 PageMonth = int.Parse(pageDate.Substring(0, 2));
                 //判断日期位数(单数)
-                if (pageDate.Length  == 5)
+                if (pageDate.Length == 5)
                 {
-                    PageDay = int.Parse(pageDate.Substring(3,1));
+                    PageDay = int.Parse(pageDate.Substring(3, 1));
                 }
                 else
                 {
                     PageDay = int.Parse(pageDate.Substring(3, 2));
                 }
+                PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
+                ////判断当前是否为一月六号(1111/1/1)
+                //if (DateTime.Now.ToShortDateString().Substring(5, 1) == "1" && DateTime.Now.ToShortDateString().Substring(7, 1) == "6")
+                //{
+                //    //大于二说明是去年的数据
+                //    if (PageMonth > 2)
+                //    {
+                //        PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)) - 1, PageMonth, PageDay);
+                //    }
+                //    else
+                //    {
+                //        PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
+                //    }
+                //}
+                //else
+                //{
+                //    PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
+                //}
             }
             else
             {
@@ -84,26 +108,14 @@ namespace QuanRadar
                 {
                     PageDay = int.Parse(pageDate.Substring(2, 2));
                 }
-            }
-            //判断当前是否为一月六号(1111/1/1)
-            if (DateTime.Now.ToShortDateString().Substring(5, 1) == "1" && DateTime.Now.ToShortDateString().Substring(7, 1) == "6")
-            {
-                //大于二说明是去年的数据
-                if (PageMonth > 2)
-                {
-                    PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4))-1, PageMonth, PageDay);
-                }
-                else
-                {
-                    PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
-                }
-            }
-            else
-            {
                 PageDT = new DateTime(int.Parse(DateTime.Now.ToShortDateString().Substring(0, 4)), PageMonth, PageDay);
             }
+            if (PageDT < StartTime)
+            {
+                End = true;
+            }
             //判断是否为7天内数据
-            if ((DateTime.Now - PageDT).TotalDays <= 6)
+            if (PageDT>=StartTime && PageDT<=EndTime)
             {
                 return true;
             }
@@ -139,7 +151,6 @@ namespace QuanRadar
                     {
                         string cellValue = row.GetCell(2).ToString();
                         string _temp = "";
-
                         GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
                         if (!string.IsNullOrWhiteSpace(cellValue))
                         {
@@ -151,7 +162,7 @@ namespace QuanRadar
                             else
                             {
                                 _temp = cellValue.Substring(2, cellValue.Length - 2);
-                                GetAllData(_temp, "2", seven);
+                                GetAllData(_temp, "5", seven);
                             }
                         }
                     }
@@ -301,8 +312,10 @@ namespace QuanRadar
                         }
                         else
                         {
-                            End = true;
-                            break;
+                            if (End)
+                            {
+                                break;
+                            }
                         }
                     }
                     else
@@ -361,16 +374,18 @@ namespace QuanRadar
                 }
             }
             bool isSeven = false;
-            bool isCustom = false;
-            //
             if (isSevenDay.IsChecked == true)
             {
                 isSeven = true;
+                StartTime = new DateTime(int.Parse(StartPointYears.Text), int.Parse(StartPointMonth.Text), int.Parse(StartPointDay.Text));
+                EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text), int.Parse(EndPointDay.Text));
+                if (StartTime> EndTime)
+                {
+                    MessageBox.Show("爬取失败，请确认时间设定是否正确");
+                    return;
+                }
             }
-            if (isCustomFormat.IsChecked == true)
-            {
-                isCustom = true;
-            }
+
             //xlsx or xls
             if (UserID.Text.Substring(UserID.Text.Length - 5, 5) == ".xlsx" | UserID.Text.Substring(UserID.Text.Length - 4, 4) == ".xls")
             {
@@ -391,7 +406,7 @@ namespace QuanRadar
                 else
                 {
                     _temp = UserID.Text.Substring(2, UserID.Text.Length - 2);
-                    IAsyncResult result = handler.BeginInvoke(_temp, "2", isSeven, new AsyncCallback(SingleIDCallback), null);
+                    IAsyncResult result = handler.BeginInvoke(_temp, "5", isSeven, new AsyncCallback(SingleIDCallback), null);
                 }
             }
             UnEnabledButton();
@@ -469,7 +484,13 @@ namespace QuanRadar
                     }
                 }
             }
-            pgFeed.Save2Excel("merge_" + DateTime.Now.ToString("yyyyMMddHHmmssffff"));
+            string mergeName = "merge_" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            pgFeed.Save2Excel(mergeName);
+            //如果全部都
+            if (isCustomFormat.IsChecked == true)
+            {
+                pgFeed.CustomFormat(mergeName);
+            }
             MessageBox.Show("合并完成");
             EnabledButton();
         }
