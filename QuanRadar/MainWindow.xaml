@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuanRadar"
         mc:Ignorable="d"
-        Title="圈子爬取器         V0.2.181123.1721" Height="450" Width="870" ResizeMode="NoResize">
+        Title="圈子爬取器         V0.2.181129.1701" Height="450" Width="870" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="56*"/>
             <ColumnDefinition Width="541*"/>
             <ColumnDefinition Width="197*"/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="UserID" HorizontalAlignment="Left" Height="29" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="598" Grid.IsSharedSizeScope="True" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="UserID" HorizontalAlignment="Left" Height="29" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="598" Grid.IsSharedSizeScope="True" Grid.Column="1" Grid.ColumnSpan="2" Text="5_11fd0b112288bd69"/>
         <Button x:Name="StartButton" Content="开始爬取" HorizontalAlignment="Left" Height="29" Margin="80,10,0,0" VerticalAlignment="Top" Width="77" Click="Button_Click" Grid.Column="2" />
         <TextBox x:Name="TextBox_Cookie" HorizontalAlignment="Left" Height="323" Margin="10,44,0,0" TextWrapping="Wrap" Text="使用教程：&#xA;1.将用户ID填入上方TextBox中&#xA;2.点击右方开始爬取按钮&#xA;&#xA;用户须知：&#xA;1.用户ID并非其nickname，而是&#xA;https://quan.qq.com/userCenter/2_o9GiTuCSz6w4uJRkPUvZeSNo-2_U?addressbar=hide&amp;from=&amp;ch=&amp;ich=&#xA;&#x9;&#x9;&#x9;             2_o9GiTuCSz6w4uJRkPUvZeSNo-2_U&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;这才是用户ID哦&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;2.可以使用Excel作为多用户爬取的配置文件，一次性爬取多个用户的数据。&#xA;3.只会爬取发布的帖子的数据，转发点赞等消息被屏蔽掉了，如果有需要可以自己fork改改取消屏蔽或者联系我让我帮忙切换按钮啥的，如果没人找我我就当不需要这些数据了。&#xA;4.可通过下列联系方式向我提交bug和新功能需求。&#xA;&#xA;&#xA;Email:&#x9;me66ccff@gmail.com&#xA;Github: &#x9;me66ccff&#xA;Bilibili：&#x9;止止愚" VerticalAlignment="Top" Width="659" IsEnabled="False" Grid.ColumnSpan="3" />
         <Label x:Name="Type" Grid.ColumnSpan="2" Content="用户ID：" HorizontalAlignment="Left" Height="29" Margin="10,10,0,0" VerticalAlignment="Top" Width="51"/>

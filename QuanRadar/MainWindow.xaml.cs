@@ -55,10 +55,22 @@ namespace QuanRadar
             int PageMonth = 0;
             int PageDay = 0;
             DateTime PageDT;
-            //当天发布
-            if (pageDate.Substring(pageDate.Length-1,1) == "前")
+            if (pageDate == "刚刚")
             {
                 PageDT = DateTime.Now;
+            }
+            //XX小时前
+            else if (pageDate.Substring(pageDate.Length-1,1) == "前")
+            {
+                //当天
+                if (DateTime.Now.Hour-int.Parse(pageDate.Substring(0, pageDate.Length - 3)) >=0)
+                {
+                    PageDT = DateTime.Now;
+                }
+                else
+                {
+                    PageDT = DateTime.Now.AddDays(-1);
+                }
             }
             else if (pageDate == "昨天")
             {
@@ -150,20 +162,10 @@ namespace QuanRadar
                     if (row != null)
                     {
                         string cellValue = row.GetCell(2).ToString();
-                        string _temp = "";
                         GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
                         if (!string.IsNullOrWhiteSpace(cellValue))
                         {
-                            if (cellValue.Substring(0, 3) == "101")
-                            {
-                                _temp = cellValue.Substring(4, cellValue.Length - 4);
-                                GetAllData(_temp, "101", seven);
-                            }
-                            else
-                            {
-                                _temp = cellValue.Substring(2, cellValue.Length - 2);
-                                GetAllData(_temp, "5", seven);
-                            }
+                                GetAllData(cellValue.Split('_')[1], cellValue.Split('_')[0], seven);
                         }
                     }
                 }
@@ -378,7 +380,7 @@ namespace QuanRadar
             {
                 isSeven = true;
                 StartTime = new DateTime(int.Parse(StartPointYears.Text), int.Parse(StartPointMonth.Text), int.Parse(StartPointDay.Text));
-                EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text), int.Parse(EndPointDay.Text));
+                EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text) + 1, int.Parse(EndPointDay.Text));
                 if (StartTime> EndTime)
                 {
                     MessageBox.Show("爬取失败，请确认时间设定是否正确");
@@ -396,18 +398,7 @@ namespace QuanRadar
             else
             {
                 GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
-                string _temp = "";
-
-                if (UserID.Text.Substring(0, 3) == "101")
-                {
-                    _temp = UserID.Text.Substring(4, UserID.Text.Length - 4);
-                    IAsyncResult result = handler.BeginInvoke(_temp, "101", isSeven, new AsyncCallback(SingleIDCallback), null);
-                }
-                else
-                {
-                    _temp = UserID.Text.Substring(2, UserID.Text.Length - 2);
-                    IAsyncResult result = handler.BeginInvoke(_temp, "5", isSeven, new AsyncCallback(SingleIDCallback), null);
-                }
+                IAsyncResult result = handler.BeginInvoke(UserID.Text.Split('_')[1], UserID.Text.Split('_')[0], isSeven, new AsyncCallback(SingleIDCallback), null);   
             }
             UnEnabledButton();
             StartButton.Content = "爬取中……";
