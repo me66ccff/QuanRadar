@@ -131,7 +131,7 @@ namespace QuanRadar
                 End = true;
             }
             //判断是否为7天内数据
-            if (PageDT >= StartTime && PageDT <= EndTime)
+            if (PageDT >= StartTime && PageDT < EndTime)
             {
                 return true;
             }
@@ -384,7 +384,7 @@ namespace QuanRadar
             {
                 isSeven = true;
                 StartTime = new DateTime(int.Parse(StartPointYears.Text), int.Parse(StartPointMonth.Text), int.Parse(StartPointDay.Text));
-                EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text) + 1, int.Parse(EndPointDay.Text));
+                EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text), int.Parse(EndPointDay.Text) + 1);
                 if (StartTime > EndTime)
                 {
                     MessageBox.Show("爬取失败，请确认时间设定是否正确");
