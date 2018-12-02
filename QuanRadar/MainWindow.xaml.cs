@@ -47,6 +47,10 @@ namespace QuanRadar
             {
                 Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "data/");
             }
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "Check/"))
+            {
+                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "Check/");
+            }
 
         }
         //判断天数
@@ -60,10 +64,10 @@ namespace QuanRadar
                 PageDT = DateTime.Now;
             }
             //XX小时前
-            else if (pageDate.Substring(pageDate.Length-1,1) == "前")
+            else if (pageDate.Substring(pageDate.Length - 1, 1) == "前")
             {
                 //当天
-                if (DateTime.Now.Hour-int.Parse(pageDate.Substring(0, pageDate.Length - 3)) >=0)
+                if (DateTime.Now.Hour - int.Parse(pageDate.Substring(0, pageDate.Length - 3)) >= 0)
                 {
                     PageDT = DateTime.Now;
                 }
@@ -127,7 +131,7 @@ namespace QuanRadar
                 End = true;
             }
             //判断是否为7天内数据
-            if (PageDT>=StartTime && PageDT<=EndTime)
+            if (PageDT >= StartTime && PageDT <= EndTime)
             {
                 return true;
             }
@@ -137,10 +141,10 @@ namespace QuanRadar
             }
         }
         //使用子线程获取所有数据，避免卡UI
-        public delegate void GetAllDataHandler(string _UserID, string _userType,bool isSevenDay);
+        public delegate void GetAllDataHandler(string _UserID, string _userType, bool isSevenDay);
         public delegate void GetAlldataByExcelFileHandler(string path, bool seven);
         //爬取所有用户的数据
-        private void GetAlldataByExcelFile(string path,bool seven)
+        private void GetAlldataByExcelFile(string path, bool seven)
         {
             try
             {
@@ -165,7 +169,7 @@ namespace QuanRadar
                         GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
                         if (!string.IsNullOrWhiteSpace(cellValue))
                         {
-                                GetAllData(cellValue.Split('_')[1], cellValue.Split('_')[0], seven);
+                            GetAllData(cellValue.Split('_')[1], cellValue.Split('_')[0], seven);
                         }
                     }
                 }
@@ -179,7 +183,7 @@ namespace QuanRadar
             }
         }
         //获取所有数据
-        private void GetAllData(string _UserID, string userType,bool isSevenDay)
+        private void GetAllData(string _UserID, string userType, bool isSevenDay)
         {
             JObject Jobject = null;
             End = false;
@@ -210,7 +214,7 @@ namespace QuanRadar
                     else
                     {
                         Jobject = GetQuanData(_UserID, i, userType, lasttime);
-                        if (Jobject.ToString().Length >150)
+                        if (Jobject.ToString().Length > 150)
                         {
                             lasttime = Jobject["data"]["lLastTime"].ToString();
                         }
@@ -279,7 +283,7 @@ namespace QuanRadar
             {
                 return JObject.Parse(temp);
             }
-            
+
         }
         //分析数据
         private void analysePage(JObject jq, PageFeed pg, bool isSevenDay)
@@ -381,7 +385,7 @@ namespace QuanRadar
                 isSeven = true;
                 StartTime = new DateTime(int.Parse(StartPointYears.Text), int.Parse(StartPointMonth.Text), int.Parse(StartPointDay.Text));
                 EndTime = new DateTime(int.Parse(EndPointYears.Text), int.Parse(EndPointMonth.Text) + 1, int.Parse(EndPointDay.Text));
-                if (StartTime> EndTime)
+                if (StartTime > EndTime)
                 {
                     MessageBox.Show("爬取失败，请确认时间设定是否正确");
                     return;
@@ -392,13 +396,13 @@ namespace QuanRadar
             if (UserID.Text.Substring(UserID.Text.Length - 5, 5) == ".xlsx" | UserID.Text.Substring(UserID.Text.Length - 4, 4) == ".xls")
             {
                 GetAlldataByExcelFileHandler handler = new GetAlldataByExcelFileHandler(GetAlldataByExcelFile);
-                IAsyncResult result = handler.BeginInvoke(UserID.Text,isSeven, new AsyncCallback(FileCallback), null);
+                IAsyncResult result = handler.BeginInvoke(UserID.Text, isSeven, new AsyncCallback(FileCallback), null);
             }
             //单个UserID
             else
             {
                 GetAllDataHandler handler = new GetAllDataHandler(GetAllData);
-                IAsyncResult result = handler.BeginInvoke(UserID.Text.Split('_')[1], UserID.Text.Split('_')[0], isSeven, new AsyncCallback(SingleIDCallback), null);   
+                IAsyncResult result = handler.BeginInvoke(UserID.Text.Split('_')[1], UserID.Text.Split('_')[0], isSeven, new AsyncCallback(SingleIDCallback), null);
             }
             UnEnabledButton();
             StartButton.Content = "爬取中……";
@@ -491,6 +495,7 @@ namespace QuanRadar
             UserID.IsEnabled = false;
             FileOpenButton.IsEnabled = false;
             FileToOne.IsEnabled = false;
+            GenCheck.IsEnabled = false;
         }
         public void EnabledButton()
         {
@@ -498,6 +503,7 @@ namespace QuanRadar
             UserID.IsEnabled = true;
             FileOpenButton.IsEnabled = true;
             FileToOne.IsEnabled = true;
+            GenCheck.IsEnabled = true;
         }
         private void SingleIDCallback(IAsyncResult ar)
         {
@@ -512,5 +518,52 @@ namespace QuanRadar
             StartButton.Dispatcher.Invoke(new Action(delegate { StartButton.Content = "开始爬取"; }));
             StartButton.Dispatcher.Invoke(new Action(delegate { EnabledButton(); }));
         }
+        //提取关键词
+        private void GenCheck_Click(object sender, RoutedEventArgs e)
+        {
+            UnEnabledButton();
+            //数据位置
+            string DataPath = AppDomain.CurrentDomain.BaseDirectory + "Check\\";
+            DirectoryInfo root = new DirectoryInfo(DataPath);
+            //遍历目录下所有文件
+            foreach (FileInfo f in root.GetFiles())
+            {
+
+                IWorkbook workbook = null;  //新建IWorkbook对象  
+                using (FileStream file = new FileStream(f.FullName, FileMode.Open, FileAccess.ReadWrite))  //路径，打开权限，读取权限
+                {
+                    if (f.FullName.IndexOf(".xlsx") > 0) // 2007版本  
+                    {
+                        workbook = new XSSFWorkbook(file);  //xlsx数据读入workbook  
+                    }
+                    else if (f.FullName.IndexOf(".xls") > 0) // 2003版本  
+                    {
+                        workbook = new HSSFWorkbook(file);  //xls数据读入workbook  
+                    }
+                    file.Close();
+                }
+                
+                ISheet sheet = workbook.GetSheetAt(0);  //获取第一个工作表  
+                IRow row;// = sheet.GetRow(0);            //新建当前工作表行数据  
+                for (int i = 1; i <= sheet.LastRowNum; i++)  //对工作表每一行  
+                {
+                    row = sheet.GetRow(i);   //row读入第i行数据  
+                    if (row != null)
+                    {
+                        //读取pageID
+                        string temp = row.GetCell(6).ToString();
+                        row.GetCell(7).SetCellValue(temp.Split('?')[0].Split('/').Last<string>());
+                    }
+                }
+                FileStream files = new FileStream(f.FullName, FileMode.Create);
+                workbook.Write(files);
+                files.Close();
+                workbook.Close();
+
+            }
+            MessageBox.Show("提取关键字完成");
+            EnabledButton();
+        }
     }
 }
+

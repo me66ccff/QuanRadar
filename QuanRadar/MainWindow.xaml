@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuanRadar"
         mc:Ignorable="d"
-        Title="圈子爬取器         V0.2.181129.1701" Height="450" Width="870" ResizeMode="NoResize">
+        Title="圈子爬取器         V0.2.181202.1310" Height="450" Width="870" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="56*"/>
@@ -31,5 +31,6 @@
         <TextBox x:Name="EndPointDay" Grid.Column="2" HorizontalAlignment="Left" Height="17" Margin="157,174,0,0" TextWrapping="Wrap" Text="12" VerticalAlignment="Top" Width="45"/>
         <Label Content="/" Grid.Column="2" HorizontalAlignment="Left" Margin="78,170,0,0" VerticalAlignment="Top" Height="25" Width="17"/>
         <Label Content="/" Grid.Column="2" HorizontalAlignment="Left" Margin="142,169,0,0" VerticalAlignment="Top" Height="25" Width="17"/>
+        <Button x:Name="GenCheck" Content="提取关键词" HorizontalAlignment="Left" Height="29" Margin="80,265,0,0" VerticalAlignment="Top" Width="79"  Grid.Column="2" Click="GenCheck_Click" />
     </Grid>
 </Window>
