@@ -550,9 +550,8 @@ namespace QuanRadar
                     row = sheet.GetRow(i);   //row读入第i行数据  
                     if (row != null)
                     {
-                        //读取pageID
-                        string temp = row.GetCell(6).ToString();
-                        row.GetCell(7).SetCellValue(temp.Split('?')[0].Split('/').Last<string>());
+                        //提取关键词
+                        row.CreateCell(7, CellType.String).SetCellValue(row.GetCell(6).ToString().Split('?')[0].Split('/').Last<string>());
                     }
                 }
                 FileStream files = new FileStream(f.FullName, FileMode.Create);
